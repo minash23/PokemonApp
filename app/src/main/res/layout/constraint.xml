@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#B7A5D1"
+    android:background="#A993C8"
     tools:context=".PokemonActivity">
 
     <EditText
@@ -298,5 +298,17 @@
         android:layout_marginTop="12dp"
         app:layout_constraintStart_toEndOf="@+id/level_text"
         app:layout_constraintTop_toBottomOf="@+id/weight_input" />
+
+    <Button
+        android:id="@+id/database_button"
+        android:layout_width="113dp"
+        android:layout_height="57dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="#353333"
+        android:onClick="onClick"
+        android:text="Go to Database!"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

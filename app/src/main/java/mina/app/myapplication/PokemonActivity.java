@@ -1,9 +1,12 @@
 package mina.app.myapplication;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.ContentValues;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Selection;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -12,35 +15,43 @@ import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.database.Cursor;
 
 public class PokemonActivity extends AppCompatActivity {
+    EditText name_input;
+    EditText national_number_input;
+    EditText species_input;
+    RadioButton male_button;
+    RadioButton female_button;
+    RadioButton unk_button;
+    EditText height_input;
+    EditText weight_input;
+    Spinner level_spinner;
+    EditText HP_input;
+    EditText attack_input;
+    EditText defense_input;
+    Cursor mCursor;
+
+    TextView name_text;
+    TextView national_number_text;
+    TextView species_text;
+    TextView gender_text;
+    TextView height_text;
+    TextView weight_text;
+    TextView level_text;
+    TextView HP_text;
+    TextView attack_text;
+    TextView defense_text;
+    Button DatabaseButton;
+
+        public void onClick(View view) {
+            Intent intent = new Intent(this, DatabaseActivity.class);
+            startActivity(intent);
+        }
 
     private View.OnClickListener saveListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            EditText name_input = findViewById(R.id.name_input);
-            EditText national_number_input = findViewById(R.id.national_number_input);
-            EditText species_input = findViewById(R.id.species_input);
-            RadioButton male_button = findViewById(R.id.male_button);
-            RadioButton female_button = findViewById(R.id.female_button);
-            RadioButton unk_button = findViewById(R.id.unk_button);
-            EditText height_input = findViewById(R.id.height_input);
-            EditText weight_input = findViewById(R.id.weight_input);
-            Spinner level_spinner = findViewById(R.id.level_spinner);
-            EditText HP_input = findViewById(R.id.HP_input);
-            EditText attack_input = findViewById(R.id.attack_input);
-            EditText defense_input = findViewById(R.id.defense_input);
-
-            TextView name_text = findViewById(R.id.name_text);
-            TextView national_number_text = findViewById(R.id.national_number_text);
-            TextView species_text = findViewById(R.id.species_text);
-            TextView gender_text = findViewById(R.id.gender_text);
-            TextView height_text = findViewById(R.id.height_text);
-            TextView weight_text = findViewById(R.id.weight_text);
-            TextView level_text = findViewById(R.id.level_text);
-            TextView HP_text = findViewById(R.id.HP_text);
-            TextView attack_text = findViewById(R.id.attack_text);
-            TextView defense_text = findViewById(R.id.defense_text);
             int count = 0;
 
             if (Integer.parseInt(national_number_input.getText().toString()) < 0 || Integer.parseInt(national_number_input.getText().toString()) > 1010 || national_number_input.getText().toString().isEmpty()) {
@@ -108,9 +119,8 @@ public class PokemonActivity extends AppCompatActivity {
             if (count > 0) {
                 String badMessage = "Please Fix all Required Fields. ";
                 Toast.makeText(PokemonActivity.this, badMessage, Toast.LENGTH_SHORT).show();
-            } else if (count == 0) {
-                String message = "We Have added your Pokemon to the Collection!";
-                Toast.makeText(PokemonActivity.this, message, Toast.LENGTH_SHORT).show();
+            }
+            else if (count == 0) {
                 name_text.setTextColor(Color.BLACK);
                 species_text.setTextColor(Color.BLACK);
                 national_number_text.setTextColor(Color.BLACK);
@@ -121,36 +131,93 @@ public class PokemonActivity extends AppCompatActivity {
                 HP_text.setTextColor(Color.BLACK);
                 attack_text.setTextColor(Color.BLACK);
                 defense_text.setTextColor(Color.BLACK);
+
+                //Code for Database
+                boolean bool = true;
+                ContentValues contentValues = new ContentValues();
+                contentValues.put(pokemonDBProvider.COLUMN_ONE, national_number_input.getText().toString().trim());
+                contentValues.put(pokemonDBProvider.COLUMN_TWO, name_input.getText().toString().trim());
+                contentValues.put(pokemonDBProvider.COLUMN_THREE, species_input.getText().toString().trim());
+                if (unk_button.isChecked() == true){
+                    contentValues.put(pokemonDBProvider.COLUMN_FOUR, "Unknown".trim());
+                }
+                else if (male_button.isChecked() == true){
+                    contentValues.put(pokemonDBProvider.COLUMN_FOUR, "Male".trim());
+                }
+                else{
+                    contentValues.put(pokemonDBProvider.COLUMN_FOUR, "Female".trim());
+                }
+                contentValues.put(pokemonDBProvider.COLUMN_FIVE, height_input.getText().toString().trim());
+                contentValues.put(pokemonDBProvider.COLUMN_SIX, weight_input.getText().toString().trim());
+                contentValues.put(pokemonDBProvider.COLUMN_SEVEN, level_spinner.getSelectedItem().toString().trim());
+                contentValues.put(pokemonDBProvider.COLUMN_EIGHT, HP_input.getText().toString().trim());
+                contentValues.put(pokemonDBProvider.COLUMN_NINE, attack_input.getText().toString().trim());
+                contentValues.put(pokemonDBProvider.COLUMN_TEN, defense_input.getText().toString().trim());
+
+
+                String gen = "";
+                if (unk_button.isChecked() == true){
+                    gen = "Unknown";
+                }
+                else if (male_button.isChecked() == true){
+                    gen = "Male";
+                }
+                else{
+                    gen = "Female";
+                }
+
+                String[] projection = {
+                        pokemonDBProvider.COLUMN_ONE,
+                        pokemonDBProvider.COLUMN_TWO,
+                        pokemonDBProvider.COLUMN_THREE,
+                        pokemonDBProvider.COLUMN_FOUR,
+                        pokemonDBProvider.COLUMN_FIVE,
+                        pokemonDBProvider.COLUMN_SIX,
+                        pokemonDBProvider.COLUMN_SEVEN,
+                        pokemonDBProvider.COLUMN_EIGHT,
+                        pokemonDBProvider.COLUMN_NINE,
+                        pokemonDBProvider.COLUMN_TEN
+                };
+
+                String selection = pokemonDBProvider.COLUMN_ONE + "= ? AND " +
+                        pokemonDBProvider.COLUMN_TWO + "= ? AND " +
+                        pokemonDBProvider.COLUMN_THREE + "= ? AND " +
+                        pokemonDBProvider.COLUMN_FOUR + "= ? AND " +
+                        pokemonDBProvider.COLUMN_FIVE + "= ? AND " +
+                        pokemonDBProvider.COLUMN_SIX + "= ? AND " +
+                        pokemonDBProvider.COLUMN_SEVEN + "= ? AND " +
+                        pokemonDBProvider.COLUMN_EIGHT + "= ? AND " +
+                        pokemonDBProvider.COLUMN_NINE + "= ? AND " +
+                        pokemonDBProvider.COLUMN_TEN + "= ?";
+
+                String[] selectionArgs = {
+                        national_number_input.getText().toString().trim(),
+                        name_input.getText().toString().trim(),
+                        species_input.getText().toString().trim(),
+                        gen,
+                        height_input.getText().toString().trim(),
+                        weight_input.getText().toString().trim(),
+                        level_spinner.getSelectedItem().toString().trim(),
+                        HP_input.getText().toString().trim(),
+                        attack_input.getText().toString().trim(),
+                        defense_input.getText().toString().trim()
+                };
+
+                Cursor cursor = getContentResolver().query(pokemonDBProvider.CONTENT_URI, projection, selection, selectionArgs, null);
+
+                if (cursor.getCount() < 1){
+                    getContentResolver().insert(pokemonDBProvider.CONTENT_URI, contentValues);
+                    String message = "We Have added your Pokemon to the Collection!";
+                    Toast.makeText(PokemonActivity.this, message, Toast.LENGTH_SHORT).show();
+                } else{
+                    String message = "This is a duplicate Pokemon. Please Try Different Values!";
+                    Toast.makeText(PokemonActivity.this, message, Toast.LENGTH_SHORT).show();
+                }
             }
         }
     };
 
     public void reset(View view) {
-        //access all input ids
-        EditText name_input = findViewById(R.id.name_input);
-        EditText national_number_input = findViewById(R.id.national_number_input);
-        EditText species_input = findViewById(R.id.species_input);
-        RadioButton male_button = findViewById(R.id.male_button);
-        RadioButton female_button = findViewById(R.id.female_button);
-        RadioButton unk_button = findViewById(R.id.unk_button);
-        EditText height_input = findViewById(R.id.height_input);
-        EditText weight_input = findViewById(R.id.weight_input);
-        Spinner level_spinner = findViewById(R.id.level_spinner);
-        EditText HP_input = findViewById(R.id.HP_input);
-        EditText attack_input = findViewById(R.id.attack_input);
-        EditText defense_input = findViewById(R.id.defense_input);
-        //access all text ids
-        TextView name_text = findViewById(R.id.name_text);
-        TextView national_number_text = findViewById(R.id.national_number_text);
-        TextView species_text = findViewById(R.id.species_text);
-        TextView gender_text = findViewById(R.id.gender_text);
-        TextView height_text = findViewById(R.id.height_text);
-        TextView weight_text = findViewById(R.id.weight_text);
-        TextView level_text = findViewById(R.id.level_text);
-        TextView HP_text = findViewById(R.id.HP_text);
-        TextView attack_text = findViewById(R.id.attack_text);
-        TextView defense_text = findViewById(R.id.defense_text);
-
         String defaultType = "";
         String defaultInt = "0";
         name_input.setText(defaultType);
@@ -178,30 +245,18 @@ public class PokemonActivity extends AppCompatActivity {
     }
 
     public void femaleRadios(View view) {
-        RadioButton male_button = findViewById(R.id.male_button);
-        RadioButton female_button = findViewById(R.id.female_button);
-        RadioButton unk_button = findViewById(R.id.unk_button);
-
         female_button.setChecked(true);
         male_button.setChecked(false);
         unk_button.setChecked(false);
     }
 
     public void maleRadios(View view) {
-        RadioButton male_button = findViewById(R.id.male_button);
-        RadioButton female_button = findViewById(R.id.female_button);
-        RadioButton unk_button = findViewById(R.id.unk_button);
-
         female_button.setChecked(false);
         male_button.setChecked(true);
         unk_button.setChecked(false);
     }
 
     public void unkRadios(View view) {
-        RadioButton male_button = findViewById(R.id.male_button);
-        RadioButton female_button = findViewById(R.id.female_button);
-        RadioButton unk_button = findViewById(R.id.unk_button);
-
         female_button.setChecked(false);
         male_button.setChecked(false);
         unk_button.setChecked(true);
@@ -210,17 +265,43 @@ public class PokemonActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.linear);
+        setContentView(R.layout.constraint);
 
+
+        name_input = findViewById(R.id.name_input);
+        national_number_input = findViewById(R.id.national_number_input);
+        species_input = findViewById(R.id.species_input);
+        male_button = findViewById(R.id.male_button);
+        female_button = findViewById(R.id.female_button);
+        unk_button = findViewById(R.id.unk_button);
+        height_input = findViewById(R.id.height_input);
+        weight_input = findViewById(R.id.weight_input);
+        level_spinner = findViewById(R.id.level_spinner);
+        HP_input = findViewById(R.id.HP_input);
+        attack_input = findViewById(R.id.attack_input);
+        defense_input = findViewById(R.id.defense_input);
+
+        name_text = findViewById(R.id.name_text);
+        national_number_text = findViewById(R.id.national_number_text);
+        species_text = findViewById(R.id.species_text);
+        gender_text = findViewById(R.id.gender_text);
+        height_text = findViewById(R.id.height_text);
+        weight_text = findViewById(R.id.weight_text);
+        level_text = findViewById(R.id.level_text);
+        HP_text = findViewById(R.id.HP_text);
+        attack_text = findViewById(R.id.attack_text);
+        defense_text = findViewById(R.id.defense_text);
+
+        DatabaseButton = findViewById(R.id.database_button);
         Button saveButton = findViewById(R.id.save_button);
         saveButton.setOnClickListener(saveListener);
 
         Spinner spinner = (Spinner) findViewById(R.id.level_spinner);
-// Create an ArrayAdapter using the string array and a default spinner layout
+        // Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.stringArray, android.R.layout.simple_spinner_item);
-// Specify the layout to use when the list of choices appears
+        // Specify the layout to use when the list of choices appears
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-// Apply the adapter to the spinner
+        // Apply the adapter to the spinner
         spinner.setAdapter(adapter);
 
     }
